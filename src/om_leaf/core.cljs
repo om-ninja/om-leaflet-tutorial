@@ -13,7 +13,7 @@
 
 ;; define your app data so that it doesn't get over-written on reload
 
-(defonce app-state (atom {:geojson []}))
+(defonce app-state (atom {:text "Querying..."}))
 
 (def overpass-api-url "http://www.overpass-api.de/api/xapi")
 (defn overpass-node-query [key value bboxstring]
@@ -33,10 +33,11 @@
   (om/component
     (html [:p (:text data)])))
 
-(go
- (let [url neighbourhood-query
-       result (:body (<! (http/get url {:with-credentials? false})))]
-   (reset! app-state {:text (prn-str (osm-xml->geojson result))})))
+(when (= (:text @app-state "Querying..."))
+  (go
+   (let [url neighbourhood-query
+         result (:body (<! (http/get url {:with-credentials? false})))]
+     (reset! app-state {:text (prn-str (osm-xml->geojson result))}))))
 
 (om/root query-result-view
          app-state
